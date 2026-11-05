@@ -1,6 +1,9 @@
 from datetime import date as Date
 
-EXERCISES = ["レッグプレス", "ショルダープレス", "チェストプレス", "ラットプルダウン", "懸垂"]
+EXERCISES = [
+    "レッグプレス", "ショルダープレス", "チェストプレス", "ラットプルダウン", "懸垂",
+    "ペックフライ", "ケーブルプルオーバー",
+]
 
 
 class Workout:
@@ -35,22 +38,40 @@ class Workout:
     def from_dict(cls, data):
         return cls(**data)
 
+class WorkoutLog:
+    def __init__(self):
+        self.workouts = []   # Workout を入れるリスト
+
+    def add(self, workout):
+        if not isinstance(workout, Workout):
+            raise TypeError(f"Workoutを追加してください（受け取った型：{type(workout).__name__}）")
+        self.workouts.append(workout)
+
+    def all(self):
+        return list(self.workouts)
+
+    def filter_by_exercise(self, name):
+        return [w for w in self.workouts if w.exercise == name]
+
+    def __len__(self):
+        return len(self.workouts)
+
 
 if __name__ == "__main__":
-    w = Workout("2026-11-05", "レッグプレス", 125, 12, 3)
-    d = w.to_dict()
-    print(d)
-    print(Workout.from_dict(d).to_dict() == d)
+    log = WorkoutLog()
+    log.add(Workout("2026-11-05", "レッグプレス", 135, 10, 3))
+    log.add(Workout("2026-11-05", "ショルダープレス", 32, 9, 3))
+    log.add(Workout("2026-11-07", "レッグプレス", 135, 10, 3))
 
-    bad_inputs = [
-        ("2026-02-30", "レッグプレス", 125, 12, 3),
-        ("2026-11-05", "スクワット", 60, 10, 3),
-        ("2026-11-05", "レッグプレス", -5, 12, 3),
-        ("2026-11-05", "レッグプレス", 125, 0, 3),
-    ]
-    for args in bad_inputs:
-        try:
-            Workout(*args)
-            print("NG: エラーが出なかった", args)
-        except ValueError as e:
-            print("OK:", e)
+    print(len(log))
+    print(len(log.filter_by_exercise("レッグプレス")))
+    print(log.filter_by_exercise("懸垂"))
+
+    copied = log.all()
+    copied.clear()
+    print(len(log))
+
+    try:
+        log.add({"exercise": "レッグプレス"})
+    except TypeError as e:
+        print("OK:", e)
